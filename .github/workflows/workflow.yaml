@@ -1,0 +1,41 @@
+name: Continuos Integration
+
+on: 
+  push:
+    branches:
+      - main
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout o código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+      
+      - name: Executar DOCKERFILE 
+        run: |
+          docker build -t meu-app:latest .        
+          docker run --rm meu-app:latest echo "Conteiner executado com êxito" 
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout o código
+        uses: actions/checkout@v3               
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+      
+      - name: Instalar Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Rodar testes
+        run: |
+          docker-compose run api python -m unittest discover
+       
